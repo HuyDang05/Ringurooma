@@ -8,11 +8,9 @@ const FormData = require('form-data');
 
 // Configuration - Customize these values as needed
 const config = {
-  webhookUrl: 'https://n8nbyphd.duckdns.org/webhook-test/process-audio',
-  audioFilePath: '../resources/audio/n5level.wav', // Path to your Japanese speech audio file
-  userId: 'test-user-123',
-  // Sample Japanese text with translation: "Hello, my name is Tanaka. I'm studying Japanese. Please evaluate my pronunciation."
-  referenceText: 'こんにちは、私の名前は田中です。日本語を勉強しています。発音を評価してください。'
+  webhookUrl: 'https://n8nbyphd.duckdns.org/webhook-test/backend',
+  audioFilePath: '../resources/audio/shortest_fast.wav', // Path to your Japanese speech audio file
+  userId: 1,
 };
 
 // Utility to check file size in MB
@@ -61,11 +59,12 @@ async function testRinguroomaBackend() {
 
     // Add the audio file
     const audioFile = fs.createReadStream(config.audioFilePath);
-    formData.append('audio0', audioFile);
+    formData.append('audio', audioFile);
 
     // Add other required data
-    formData.append('user_id', config.userId);
-    formData.append('reference_text', config.referenceText);
+    formData.append('userId', config.userId);
+    formData.append('chatInput', 'Xin chào');
+    formData.append('sessionId', 'test-session');
 
     console.log('\nSending request to Ringurooma backend...');
     console.time('Request completed in');
