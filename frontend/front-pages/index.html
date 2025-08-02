@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>LingLooma - AI 日本語チャット</title>
+  <link rel="stylesheet" href="style.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+</head>
+
+<body>
+  <button id="sidebar-toggle-btn">☰</button>
+
+  <div id="sidebar" class="sidebar">
+    <div id="sidebar-content">
+      <button id="new-chat-btn">＋ New Chat</button>
+      <div id="chat-history-list"></div>
+    </div>
+  </div>
+
+  <div id="main">
+    <div class="chat-box" id="chatBox">
+      <div id="welcome-text">今日、何をしゃべりたい？</div>
+      <div class="chat-messages" id="chatMessages"></div>
+      <div class="input-area">
+        <label for="audio-upload" class="upload-btn" title="Đính kèm file MP3">📎</label>
+        <input type="file" id="audio-upload" accept="audio/mp3,audio/mpeg,audio/wav" />
+        <div id="pending-audio-container" style="margin-top: 8px;"></div>
+        <input id="user-input" type="text" placeholder="メッセージ" autocomplete="off" />
+        <button id="record-btn" title="Ghi âm">🎤</button>
+        <button id="send-btn" class="send-btn">📤</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ✅ Dùng module script -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script type="module" src="main.js"></script>
+</body>
+
+</html>
