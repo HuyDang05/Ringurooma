@@ -1,0 +1,848 @@
+{
+  "name": "Chatbot",
+  "nodes": [
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"caution\":\"Nội dung chat không phù hợp. Vui lòng thử lại!\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.2,
+      "position": [
+        -800,
+        0
+      ],
+      "id": "4e0145a7-25a7-462d-b96f-0de6270c913a",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n\t\"isAppropriate\": true\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.2,
+      "position": [
+        -1280,
+        -40
+      ],
+      "id": "237da036-d603-4b7c-9082-c75176e8f01f",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Is the following user-generated content ethically appropriate? Note the following commands are appropriate: \"\\eval\", \"\\tts\", \"\\topic\", \"\\speech\".\n\nContent: \"{{ $json.chatInput }}\"",
+        "hasOutputParser": true
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.6,
+      "position": [
+        -1460,
+        -220
+      ],
+      "id": "b67d2907-3dd9-4845-93c9-f7ca0d2db75b",
+      "name": "Content Moderator"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "chatbot",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*",
+          "binaryPropertyName": "audio"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -2040,
+        -220
+      ],
+      "id": "ad46e61d-8b3b-44b0-8c61-6d1359141c58",
+      "name": "Webhook",
+      "webhookId": "66569651-9cb5-48bc-88d0-1ccb05724430"
+    },
+    {
+      "parameters": {
+        "content": "# Entry Point",
+        "height": 500,
+        "width": 260,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -2120,
+        -360
+      ],
+      "id": "1c31c0d6-8826-46b4-adc3-c89aac5c31ad",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "# Post processing\n\n",
+        "height": 460,
+        "width": 680
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        700,
+        -360
+      ],
+      "id": "b788d506-f703-4806-9e27-be343b5337f8",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "b05f8f34-0772-4d41-a857-815b57c659f2",
+              "leftValue": "={{ $json.output.isAppropriate }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -1100,
+        -220
+      ],
+      "id": "acf9536e-eae9-49a3-9470-a7896979e113",
+      "name": "isAppropriate"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $(\"Message Formatter\").item.json.sessionId }}",
+        "sessionTTL": 604800,
+        "contextWindowLength": 20
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryRedisChat",
+      "typeVersion": 1.5,
+      "position": [
+        440,
+        60
+      ],
+      "id": "814ab7d1-e367-4630-804b-397ef1847164",
+      "name": "Redis Chat Memory",
+      "credentials": {
+        "redis": {
+          "id": "LPNdwLjI3wVCoH83",
+          "name": "Redis account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Call this to get speaking topics. Input must include the command \"\\topic\"",
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "value": "main",
+          "mode": "list",
+          "cachedResultName": "main"
+        },
+        "table": {
+          "__rl": true,
+          "value": "Topic",
+          "mode": "list",
+          "cachedResultName": "Topic"
+        },
+        "limit": 10,
+        "options": {
+          "connectionTimeout": 30
+        }
+      },
+      "type": "n8n-nodes-base.postgresTool",
+      "typeVersion": 2.6,
+      "position": [
+        100,
+        440
+      ],
+      "id": "768a0c15-75c7-4d58-af48-533070394519",
+      "name": "Get Topics",
+      "retryOnFail": true,
+      "credentials": {
+        "postgres": {
+          "id": "GFxCAqclSZKbbHwW",
+          "name": "Ringurooma Postgres Account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "toolDescription": "Call this to get the audio file transcribed from text. Input must include the command \"\\tts\"",
+        "method": "POST",
+        "url": "https://speech.southeastasia.cloudapp.azure.com/api/text-to-speech",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "text",
+              "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('parameters0_Value', `The text is requested for transcription.`, 'string') }}"
+            },
+            {
+              "name": "voice_name",
+              "value": "ja-JP-NanamiNeural"
+            }
+          ]
+        },
+        "options": {
+          "allowUnauthorizedCerts": true,
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          },
+          "timeout": 10000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        420,
+        440
+      ],
+      "id": "bf580d30-7dbf-4d71-aaa0-2af3a4e504cf",
+      "name": "Text To Speech",
+      "retryOnFail": true,
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "ztktGIooaBBhrVkw",
+          "name": "Ringurooma Speech API Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Chat Content Formatter: Xử lý và làm sạch nội dung chat để đảm bảo hoạt động ổn định trong các node tiếp theo\n\nfunction formatChatContent(content) {\n  // Kiểm tra input\n  if (typeof content !== 'string') {\n    return '';\n  }\n  \n  let formattedContent = content;\n  \n  // Loại bỏ các ký tự điều khiển không mong muốn\n  formattedContent = formattedContent.replace(/[\\x00-\\x08\\x0B\\x0C\\x0E-\\x1F\\x7F]/g, '');\n  \n  // Xử lý các ký tự thoát (escape characters)\n  formattedContent = formattedContent\n    .replace(/\\\\\\\\/g, '\\\\')      // Double backslash -> single backslash\n    .replace(/\\\\\"/g, '\"')        // Escaped quotes -> normal quotes\n    .replace(/\\\\'/g, \"'\")        // Escaped single quotes -> normal single quotes\n    .replace(/\\\\n/g, '\\n')       // Escaped newlines -> actual newlines\n    .replace(/\\\\t/g, '\\t')       // Escaped tabs -> actual tabs\n    .replace(/\\\\r/g, '\\r');      // Escaped carriage returns -> actual carriage returns\n  \n  // Loại bỏ khoảng trắng thừa\n  formattedContent = formattedContent\n    .replace(/\\s+/g, ' ')        // Multiple spaces -> single space\n    .replace(/\\n\\s*\\n/g, '\\n')   // Multiple newlines -> single newline\n    .trim();                     // Remove leading/trailing whitespace\n  \n  // Xử lý các ký tự đặc biệt có thể gây lỗi JSON\n  formattedContent = formattedContent\n    .replace(/[\\u2000-\\u206F\\u2E00-\\u2E7F\\u3000]/g, ' ')\n    .replace(/[\\u200B-\\u200D\\uFEFF]/g, '');               \n  \n  // Loại bỏ các emoji hoặc ký tự Unicode phức tạp\n  formattedContent = formattedContent.replace(/[\\u{1F600}-\\u{1F64F}]|[\\u{1F300}-\\u{1F5FF}]|[\\u{1F680}-\\u{1F6FF}]|[\\u{1F1E0}-\\u{1F1FF}]/gu, '');\n  \n  // Xử lý các ký tự có thể gây lỗi trong regex hoặc string manipulation\n  formattedContent = formattedContent\n    .replace(/\\$/g, '\\\\$')\n    .replace(/`/g, '\\\\`');\n  \n  // Giới hạn độ dài\n  const MAX_LENGTH = 4000; // Điều chỉnh theo nhu cầu\n  if (formattedContent.length > MAX_LENGTH) {\n    formattedContent = formattedContent.substring(0, MAX_LENGTH) + '...';\n  }\n  \n  return formattedContent;\n}\n\nconst inputData = $(\"HTTP Body Extractor\").first();\n// const inputData = $(\"Chat Trigger\").first();\nconst processedData = {\n  json: {\n    ...inputData.json,\n    chatInput: formatChatContent(inputData.json.chatInput)\n  },\n  binary: inputData.binary\n};\n\n// Return processed data\nreturn processedData;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -800,
+        -220
+      ],
+      "id": "e81cc721-3bcd-4b42-a7c4-4617854ff799",
+      "name": "Message Formatter"
+    },
+    {
+      "parameters": {
+        "description": "Call this to get the speech evaluation result. Input must include the command \"\\eval\"",
+        "workflowId": {
+          "__rl": true,
+          "value": "UbxNMJRiJ7QvwYoI",
+          "mode": "list",
+          "cachedResultName": "Speaking Scoring System"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "userId": "={{ $('Message Formatter').item.json.userId }}"
+          },
+          "matchingColumns": [
+            "userId"
+          ],
+          "schema": [
+            {
+              "id": "userId",
+              "displayName": "userId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "number",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        260,
+        440
+      ],
+      "id": "63be16f3-fef4-43f8-8bfd-04acb5db8e38",
+      "name": "Speaking Scoring System"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $(\"Message Formatter\").item.json.chatInput }}",
+        "options": {
+          "systemMessage": "You're a Japanese speaking skills evaluator. Based on the user's query, decide the best tool to use. Note: audio has been sent by default.",
+          "returnIntermediateSteps": true
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.9,
+      "position": [
+        120,
+        -220
+      ],
+      "id": "c687aa90-cebf-408a-8cb9-edb36225d112",
+      "name": "Center Controller"
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.all().map(item => {\n  return {\n    json: {\n      ...item.json.body,\n      action: \"sendMessage\"\n    },\n    binary: item.binary\n  };\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1720,
+        -220
+      ],
+      "id": "ae1b8a22-4ade-4d1c-816f-f4285d357471",
+      "name": "HTTP Body Extractor"
+    },
+    {
+      "parameters": {
+        "resource": "blob",
+        "operation": "create",
+        "container": {
+          "__rl": true,
+          "value": "main",
+          "mode": "list",
+          "cachedResultName": "main"
+        },
+        "blobCreate": "audio",
+        "binaryPropertyName": "audio0",
+        "options": {},
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-base.azureStorage",
+      "typeVersion": 1,
+      "position": [
+        -540,
+        -220
+      ],
+      "id": "caaa60fb-c60f-4d29-ac99-833be73bb740",
+      "name": "Azure Storage",
+      "retryOnFail": true,
+      "credentials": {
+        "azureStorageSharedKeyApi": {
+          "id": "CxEYQhP72EC68z9m",
+          "name": "Azure Storage Account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.2,
+      "position": [
+        1060,
+        -220
+      ],
+      "id": "3046aef2-550d-41db-9382-8b56f42dd922",
+      "name": "Respond to Webhook 3"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"error\": \"Cần có file âm thanh để đánh giá\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.2,
+      "position": [
+        -340,
+        0
+      ],
+      "id": "8cda8f1a-521e-4ae5-86c1-001ff0e502d9",
+      "name": "Respond to Webhook 2"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "8eb1d6db-900a-4ab6-8c2d-9769622403c8",
+              "name": "chatOutput",
+              "value": "={{ $json.output }}",
+              "type": "string"
+            },
+            {
+              "id": "c15f58ef-59c6-4a60-b3e6-9db8d7b22695",
+              "name": "serviceOutput",
+              "value": "={{ $json.intermediateSteps[0].observation }}",
+              "type": "array"
+            }
+          ]
+        },
+        "options": {
+          "ignoreConversionErrors": true
+        }
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        840,
+        -220
+      ],
+      "id": "a11b1d47-054f-45a4-8d4e-e3cc8552c3aa",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "description": "Call this to get the speech based on criteria if any. Input must include the command \"\\speech\"",
+        "workflowId": {
+          "__rl": true,
+          "value": "h8i6bHl21Iue95t6",
+          "mode": "list",
+          "cachedResultName": "Get Speeches"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        -40,
+        440
+      ],
+      "id": "2acdf090-1007-4517-8055-d61bd1606728",
+      "name": "Get Speeches"
+    },
+    {
+      "parameters": {
+        "content": "# Services",
+        "height": 220,
+        "width": 680,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -100,
+        340
+      ],
+      "id": "23d00abd-3102-4cde-9941-90dafb944454",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={\n  \"error\": \"Lỗi database: {{$json.message}}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        100,
+        660
+      ],
+      "id": "2b11cdc5-5658-4831-b7e8-9b8d8ae92966",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "content": "# Preprocessing\n",
+        "height": 500,
+        "width": 1600,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1780,
+        -360
+      ],
+      "id": "502d95d8-fac9-4633-baf7-879192296dda",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "# Main",
+        "height": 920,
+        "width": 680,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -100,
+        -360
+      ],
+      "id": "f86b5c89-b8a7-4cc6-b146-6dd7955aaf7b",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "ac78e8c8-9f22-4612-9fce-9d92bd2f060f",
+              "leftValue": "={{ $json.error }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "00d768e4-0a3a-47d8-aee9-6ae332e15891",
+              "leftValue": "={{ $('Message Formatter').item.json.chatInput }}",
+              "rightValue": "\\eval",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -340,
+        -220
+      ],
+      "id": "183a957b-1c81-4adb-a76d-fff33a67629b",
+      "name": "IF"
+    },
+    {
+      "parameters": {
+        "public": true,
+        "options": {
+          "allowFileUploads": true,
+          "responseMode": "responseNode"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -2040,
+        -40
+      ],
+      "id": "3f1bc4d0-86b0-48cc-a509-a967e5cd56ee",
+      "name": "Chat Trigger",
+      "webhookId": "5ba19a14-a7f0-4d2f-a096-f07cd4bc11c5",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.0-flash",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -1480,
+        -40
+      ],
+      "id": "b8234cbc-47b9-4d38-82aa-881979f4606e",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "vnJIKlTAXTRMZeaj",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.0-flash",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        40,
+        40
+      ],
+      "id": "9cbb991e-cd90-4a65-882f-3a320329d975",
+      "name": "Google Gemini Chat Model1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "vnJIKlTAXTRMZeaj",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Content Moderator",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Content Moderator": {
+      "main": [
+        [
+          {
+            "node": "isAppropriate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "HTTP Body Extractor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "isAppropriate": {
+      "main": [
+        [
+          {
+            "node": "Message Formatter",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Redis Chat Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Center Controller",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Topics": {
+      "ai_tool": [
+        [
+          {
+            "node": "Center Controller",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ],
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Text To Speech": {
+      "ai_tool": [
+        [
+          {
+            "node": "Center Controller",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message Formatter": {
+      "main": [
+        [
+          {
+            "node": "Azure Storage",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Speaking Scoring System": {
+      "ai_tool": [
+        [
+          {
+            "node": "Center Controller",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Center Controller": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Body Extractor": {
+      "main": [
+        [
+          {
+            "node": "Content Moderator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Azure Storage": {
+      "main": [
+        [
+          {
+            "node": "IF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook 3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Speeches": {
+      "ai_tool": [
+        [
+          {
+            "node": "Center Controller",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook 2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Center Controller",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Chat Trigger": {
+      "main": [
+        []
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Content Moderator",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Center Controller",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "versionId": "0ab48366-2ed2-4f0d-888f-9218123a0207",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "18141f50263ea3752c73404a47c3133440685f99b7ea28332d8f84540f7d363f"
+  },
+  "id": "cx19Lp0EfU1mhwhg",
+  "tags": []
+}

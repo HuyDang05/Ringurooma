@@ -1,0 +1,170 @@
+{
+  "name": "Add Details",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "add-details",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "a506f2dc-7d4f-4f24-a8b3-ac3bf10c0ac2",
+      "name": "Webhook",
+      "webhookId": "5beedbc7-26e3-4620-acc3-ce2400f0b9b2"
+    },
+    {
+      "parameters": {
+        "respondWith": "noData",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.2,
+      "position": [
+        540,
+        0
+      ],
+      "id": "6f8bdcc4-5fb5-4624-a3cf-93664450c681",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "schema": {
+          "__rl": true,
+          "value": "main",
+          "mode": "list",
+          "cachedResultName": "main"
+        },
+        "table": {
+          "__rl": true,
+          "value": "User",
+          "mode": "list",
+          "cachedResultName": "User"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "bio": "={{ $json.body.bio }}",
+            "chat_custom": "={{ $json.body.customChat }}",
+            "user_id": "={{ $json.body.userId }}"
+          },
+          "matchingColumns": [
+            "user_id"
+          ],
+          "schema": [
+            {
+              "id": "user_id",
+              "displayName": "user_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "username",
+              "displayName": "username",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "password",
+              "displayName": "password",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "bio",
+              "displayName": "bio",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "chat_custom",
+              "displayName": "chat_custom",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        280,
+        0
+      ],
+      "id": "059c2d60-f743-48fa-95f9-b54536a27bbc",
+      "name": "Update Personal Information",
+      "credentials": {
+        "postgres": {
+          "id": "nRTx35UdiMLgYQyI",
+          "name": "Postgres account 2"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Update Personal Information",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Personal Information": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "5886394d-b64b-4c91-9381-9ef8575a48de",
+  "meta": {
+    "instanceId": "18141f50263ea3752c73404a47c3133440685f99b7ea28332d8f84540f7d363f"
+  },
+  "id": "WXh2OmJO7dlj2FXg",
+  "tags": []
+}

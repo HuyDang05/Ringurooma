@@ -1,0 +1,163 @@
+{
+  "name": "Sign up",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "c33c04d1-13f8-4a7c-b5be-13274c27a024",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "0364b8a4-b8e0-47f6-af51-8c29c8cf2f2a",
+      "name": "Webhook",
+      "webhookId": "c33c04d1-13f8-4a7c-b5be-13274c27a024"
+    },
+    {
+      "parameters": {
+        "respondWith": "noData",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.2,
+      "position": [
+        480,
+        0
+      ],
+      "id": "a4c25eb0-c267-49cc-9541-11d69a030a22",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "value": "main",
+          "mode": "list",
+          "cachedResultName": "main"
+        },
+        "table": {
+          "__rl": true,
+          "value": "User",
+          "mode": "list",
+          "cachedResultName": "User"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "username": "={{ $json.body.username }}",
+            "password": "={{ $json.body.password }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "user_id",
+              "displayName": "user_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "username",
+              "displayName": "username",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "password",
+              "displayName": "password",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "bio",
+              "displayName": "bio",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "chat_custom",
+              "displayName": "chat_custom",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        240,
+        0
+      ],
+      "id": "c93f12fb-f09a-4e9f-abef-f941f0be4e14",
+      "name": "Add User",
+      "credentials": {
+        "postgres": {
+          "id": "nRTx35UdiMLgYQyI",
+          "name": "Postgres account 2"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Add User",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add User": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "adc0bc64-a115-437d-a50c-a06ce7cfe056",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "18141f50263ea3752c73404a47c3133440685f99b7ea28332d8f84540f7d363f"
+  },
+  "id": "01GafRbHfnVBGX5P",
+  "tags": []
+}

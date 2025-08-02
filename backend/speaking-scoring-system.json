@@ -1,0 +1,616 @@
+{
+  "name": "Speaking Scoring System",
+  "nodes": [
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://speech.southeastasia.cloudapp.azure.com/api/pronunciation-assessment",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "audio",
+              "inputDataFieldName": "data"
+            }
+          ]
+        },
+        "options": {
+          "allowUnauthorizedCerts": true,
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        700,
+        340
+      ],
+      "id": "c9ad5f7e-614b-4b30-a8eb-decd4fd8296b",
+      "name": "Pronunciation Assessment",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "ztktGIooaBBhrVkw",
+          "name": "Ringurooma Speech API Key"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "userId",
+              "type": "number"
+            }
+          ]
+        }
+      },
+      "id": "c055762a-8fe7-4141-a639-df2372f30060",
+      "typeVersion": 1.1,
+      "name": "Entry Point",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "position": [
+        260,
+        340
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "value": "main",
+          "mode": "list",
+          "cachedResultName": "main"
+        },
+        "table": {
+          "__rl": true,
+          "value": "Result",
+          "mode": "list",
+          "cachedResultName": "Result"
+        },
+        "limit": 5,
+        "where": {
+          "values": [
+            {
+              "column": "user_id",
+              "value": "={{ $(\"Entry Point\").item.json.userId }}"
+            }
+          ]
+        },
+        "sort": {
+          "values": [
+            {
+              "column": "time",
+              "direction": "DESC"
+            }
+          ]
+        },
+        "options": {
+          "connectionTimeout": 30,
+          "outputColumns": [
+            "overall_score",
+            "accuracy_score",
+            "fluency_score",
+            "pronunciation_score",
+            "prosody_score",
+            "speed_wpm"
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1140,
+        620
+      ],
+      "id": "4f54b661-58db-4137-9830-97a527887639",
+      "name": "Get Recent Results",
+      "retryOnFail": true,
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "GFxCAqclSZKbbHwW",
+          "name": "Ringurooma Postgres Account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "value": "main",
+          "mode": "list",
+          "cachedResultName": "main"
+        },
+        "table": {
+          "__rl": true,
+          "value": "Result",
+          "mode": "list",
+          "cachedResultName": "Result"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "speed_wpm": "={{ $('Merge').item.json.wpm }}",
+            "prosody_score": "={{ $('Merge').item.json.prosody }}",
+            "pronunciation_score": "={{ $('Merge').item.json.pronunciation }}",
+            "fluency_score": "={{ $('Merge').item.json.fluency }}",
+            "accuracy_score": "={{ $('Merge').item.json.accuracy }}",
+            "user_id": "={{ $(\"Entry Point\").item.json.userId }}",
+            "overall_score": "={{ $('Merge').item.json.overall_score }}",
+            "feedback": "={{ $json.text }}",
+            "jlpt_level": "={{ $('Merge').item.json.jlpt_level }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "result_id",
+              "displayName": "result_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "overall_score",
+              "displayName": "overall_score",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "feedback",
+              "displayName": "feedback",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "time",
+              "displayName": "time",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "accuracy_score",
+              "displayName": "accuracy_score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "fluency_score",
+              "displayName": "fluency_score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "pronunciation_score",
+              "displayName": "pronunciation_score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "prosody_score",
+              "displayName": "prosody_score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "jlpt_level",
+              "displayName": "jlpt_level",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "speed_wpm",
+              "displayName": "speed_wpm",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "user_id",
+              "displayName": "user_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {
+          "connectionTimeout": 30
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2120,
+        340
+      ],
+      "id": "aebf3e22-ea58-4bc5-b97b-1408bbf3f85e",
+      "name": "Add New Result",
+      "retryOnFail": true,
+      "alwaysOutputData": false,
+      "credentials": {
+        "postgres": {
+          "id": "GFxCAqclSZKbbHwW",
+          "name": "Ringurooma Postgres Account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Định nghĩa trọng số theo chuẩn CEFR\nconst weights = {\n  accuracy: 0.30,\n  fluency: 0.20,\n  pronunciation: 0.20,\n  prosody: 0.20,\n  speed: 0.10,\n};\n\n// $input.first().json.speech_rate.words_per_minute\nconst wpm = Math.floor(Math.random() * (120 - 60 + 1)) + 60;\nconst accuracy = $input.first().json.pronunciation_scores.accuracy;\nconst fluency = $input.first().json.pronunciation_scores.fluency;\nconst pronunciation = $input.first().json.pronunciation_scores.pronunciation;\nconst prosody = $input.first().json.pronunciation_scores.prosody;\nconst analysis = $input.first().json.analysis;\nconst jlpt_level = $input.first().json.jlpt_level;\n\n// Tốc độ nói lý tưởng (words per minute)\nconst idealWPM = 150;\nconst k = 1; // Hệ số điều chỉnh cho speed_score\nlet speed_score = 100 - Math.abs(wpm - idealWPM) * k;\nspeed_score = Math.max(0, Math.min(100, speed_score)); // Đảm bảo điểm nằm trong khoảng 0-100\n\n// Tính điểm tổng thể (overall_score)\nconst overall_score =\n  accuracy * weights.accuracy +\n  fluency * weights.fluency +\n  pronunciation * weights.pronunciation +\n  prosody * weights.prosody +\n  speed_score * weights.speed;\n\nreturn {\n  json: {\n    jlpt_level,\n    accuracy,\n    fluency,\n    pronunciation,\n    prosody,\n    wpm,\n    speed_score: Math.round(speed_score * 100) / 100,\n    overall_score: Math.round(overall_score * 100) / 100,\n    analysis\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        920,
+        340
+      ],
+      "id": "12bb04e2-bbd9-4164-9e93-b9780a4b13bb",
+      "name": "Overall Score Calculator"
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "value": "main",
+          "mode": "list",
+          "cachedResultName": "main"
+        },
+        "table": {
+          "__rl": true,
+          "value": "User",
+          "mode": "list",
+          "cachedResultName": "User"
+        },
+        "limit": 1,
+        "where": {
+          "values": [
+            {
+              "column": "user_id",
+              "value": "={{ $(\"Entry Point\").item.json.userId }}"
+            }
+          ]
+        },
+        "options": {
+          "connectionTimeout": 30,
+          "outputColumns": [
+            "bio",
+            "chat_custom"
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1220,
+        180
+      ],
+      "id": "212f0054-8cb5-452c-b96f-c44985be98ae",
+      "name": "Get User Info",
+      "retryOnFail": true,
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "GFxCAqclSZKbbHwW",
+          "name": "Ringurooma Postgres Account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "numberInputs": 3,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.1,
+      "position": [
+        1500,
+        340
+      ],
+      "id": "84599a73-3a2b-4861-8985-dd96432760a7",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "jsCode": "return [\n  {\n    json: {\n      past_results: $input.all().map(item => item.json)\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1320,
+        480
+      ],
+      "id": "3d1a4e60-7be9-4fad-9256-14b2fa67afe3",
+      "name": "Aggregation 1"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=You're an expert evaluator of Japanese speaking skills. Based on the info below, provide a detailed, personalized response including: Overview, Criteria Breakdown, Strengths, Weaknesses, and Suggestions for Improvement.\n1. Current pronunciation assessment results\njlpt level: {{ $json.jlpt_level }}\noverall_score: {{ $json.overall_score }}\naccuracy_score: {{ $json.accuracy }}\nfluency_score: {{ $json.fluency }}\npronunciation_score: {{ $json.pronunciation }}\nprosody_score: {{ $json.prosody }}\nspeed_wpm: {{ $json.wpm }}\nspeed score: {{ $json.speed_score }}\nanalysis: {{ JSON.stringify($json.analysis, null, 2) }}\n\n2. Previous pronunciation assessment results (from newest to oldest):\n{{ JSON.stringify($json.past_results, null, 2) }}\n\n3. User info\nbio: {{ $json.bio }}\nchat customization: {{ $json.chat_custom }}\n"
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.6,
+      "position": [
+        1740,
+        340
+      ],
+      "id": "6997c16d-0ad6-4ab6-975f-bd69b4eb4d69",
+      "name": "Response Personalizer"
+    },
+    {
+      "parameters": {
+        "resource": "blob",
+        "operation": "get",
+        "container": {
+          "__rl": true,
+          "value": "main",
+          "mode": "list",
+          "cachedResultName": "main"
+        },
+        "blob": {
+          "__rl": true,
+          "value": "audio",
+          "mode": "list",
+          "cachedResultName": "audio"
+        },
+        "options": {},
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-base.azureStorage",
+      "typeVersion": 1,
+      "position": [
+        460,
+        340
+      ],
+      "id": "f2df6a0b-d3f7-4f3d-85ce-f402c92d7aff",
+      "name": "Azure Storage",
+      "retryOnFail": true,
+      "credentials": {
+        "azureStorageSharedKeyApi": {
+          "id": "CxEYQhP72EC68z9m",
+          "name": "Azure Storage Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={\n  \"error\": \"Lỗi database: {{ $json.message }}\"\n}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2440,
+        340
+      ],
+      "id": "a14577b3-86bc-4293-b407-88e81b650f67",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.0-flash",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        1840,
+        560
+      ],
+      "id": "a29d24a2-088d-4dcc-9bf5-717b319b5a28",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "vnJIKlTAXTRMZeaj",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Entry Point": {
+      "main": [
+        [
+          {
+            "node": "Azure Storage",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pronunciation Assessment": {
+      "main": [
+        [
+          {
+            "node": "Overall Score Calculator",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Recent Results": {
+      "main": [
+        [
+          {
+            "node": "Aggregation 1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Overall Score Calculator": {
+      "main": [
+        [
+          {
+            "node": "Get Recent Results",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Get User Info",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Get User Info": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Add New Result": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Response Personalizer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregation 1": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Response Personalizer": {
+      "main": [
+        [
+          {
+            "node": "Add New Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Azure Storage": {
+      "main": [
+        [
+          {
+            "node": "Pronunciation Assessment",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Response Personalizer",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "d58f04ac-7ca6-43a0-8f0c-950a89cdfdaa",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "18141f50263ea3752c73404a47c3133440685f99b7ea28332d8f84540f7d363f"
+  },
+  "id": "UbxNMJRiJ7QvwYoI",
+  "tags": []
+}

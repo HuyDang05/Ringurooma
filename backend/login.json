@@ -1,0 +1,194 @@
+{
+  "name": "Log In",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "login",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -420,
+        -80
+      ],
+      "id": "6eacbb0a-6f81-4092-924c-55a28b6188e9",
+      "name": "Webhook",
+      "webhookId": "618598ab-30d4-469a-b7ff-858196846813"
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "value": "main",
+          "mode": "list",
+          "cachedResultName": "main"
+        },
+        "table": {
+          "__rl": true,
+          "value": "User",
+          "mode": "list",
+          "cachedResultName": "User"
+        },
+        "returnAll": true,
+        "where": {
+          "values": [
+            {
+              "column": "username",
+              "value": "={{ $json.body.username }}"
+            },
+            {
+              "column": "password",
+              "value": "={{ $json.body.password }}"
+            }
+          ]
+        },
+        "options": {
+          "connectionTimeout": 30
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -180,
+        -80
+      ],
+      "id": "b13d76a8-be4e-42a2-8517-b0e21d5a0b20",
+      "name": "Get user by username and password",
+      "alwaysOutputData": true,
+      "retryOnFail": true,
+      "credentials": {
+        "postgres": {
+          "id": "GFxCAqclSZKbbHwW",
+          "name": "Ringurooma Postgres Account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "ff8077fa-0ac8-4019-9933-76bbed3f4a78",
+              "leftValue": "={{ $json }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "object",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        20,
+        -80
+      ],
+      "id": "b49725f4-55cc-4e8e-8549-e0d1cf070105",
+      "name": "Does it Exist"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json.user_id }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.2,
+      "position": [
+        260,
+        -180
+      ],
+      "id": "aa92a5bf-b829-43a6-b7f9-fa9c8a274416",
+      "name": "Login Successful"
+    },
+    {
+      "parameters": {
+        "respondWith": "noData",
+        "options": {
+          "responseCode": 401
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.2,
+      "position": [
+        260,
+        0
+      ],
+      "id": "df6e72a0-cc5d-423f-a29d-08cd88faaa34",
+      "name": "Login failed"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Get user by username and password",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get user by username and password": {
+      "main": [
+        [
+          {
+            "node": "Does it Exist",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Does it Exist": {
+      "main": [
+        [
+          {
+            "node": "Login Successful",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Login failed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "f94c1684-31d5-46da-a117-1e20afb42097",
+  "meta": {
+    "instanceId": "18141f50263ea3752c73404a47c3133440685f99b7ea28332d8f84540f7d363f"
+  },
+  "id": "0MpiufAGVHaLV3u4",
+  "tags": []
+}

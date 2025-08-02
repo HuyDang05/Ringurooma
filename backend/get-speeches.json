@@ -1,0 +1,407 @@
+{
+  "name": "Get Speeches",
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "id": "c055762a-8fe7-4141-a639-df2372f30060",
+      "typeVersion": 1.1,
+      "name": "Entry Point",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "position": [
+        260,
+        340
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Message: {{ $json.query }}\n\nClassify the user's message into one of the following Japanese language proficiency levels:\n- N5: Very easy, basic vocabulary and grammar.\n- N4: Easy, simple sentences and common expressions.\n- N3: Intermediate, everyday topics with moderate complexity.\n- N2: Hard, complex grammar and less common vocabulary.\n- N1: Very hard, advanced topics and specialized language.\n\nRespond with only one label: N5, N4, N3, N2, or N1.",
+        "hasOutputParser": true
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.6,
+      "position": [
+        580,
+        -60
+      ],
+      "id": "b35fb0e4-06f2-4cc6-8cf8-f98caf502751",
+      "name": "JLPT Level Classifier"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Message: {{ $json.query }}\n\nDetermine the popularity level of the speech topic mentioned in the user's message:\n- High: Widely known and commonly discussed topics.\n- Medium: Moderately known topics, familiar to some audiences.\n- Low: Rarely known or specialized topics.\n\nRespond with only one label: high, medium, or low.\n",
+        "hasOutputParser": true
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.6,
+      "position": [
+        580,
+        340
+      ],
+      "id": "bf3af4bd-4d50-4c4f-97d1-7c02428b32a8",
+      "name": "Popularity Classifier"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Message: {{ $json.query }}\n\nIdentify the main topic of the user's message from the following list:\n1. Introduce yourself\n2. Weather\n3. Food\n4. Books and Literature\n5. Hobbies and Interests\n6. Travel and Places\n7. Culture and Traditions\n8. Events and News\n9. Entertainment\n10. History\n11. Message and Mail\n\nRespond with only one order number of topic from above list",
+        "hasOutputParser": true
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.6,
+      "position": [
+        580,
+        740
+      ],
+      "id": "20be9df2-978e-4007-89b1-aa25584d1149",
+      "name": "Topic Classifier"
+    },
+    {
+      "parameters": {
+        "operation": "select",
+        "schema": {
+          "__rl": true,
+          "value": "main",
+          "mode": "list",
+          "cachedResultName": "main"
+        },
+        "table": {
+          "__rl": true,
+          "value": "Script",
+          "mode": "list",
+          "cachedResultName": "Script"
+        },
+        "limit": 3,
+        "where": {
+          "values": [
+            {
+              "column": "level",
+              "value": "={{ $json.output.level }}"
+            },
+            {
+              "column": "popularity",
+              "value": "={{ $json.output.popularity }}"
+            },
+            {
+              "column": "topic_id",
+              "value": "={{ $json.output.topic_id }}"
+            }
+          ]
+        },
+        "options": {
+          "connectionTimeout": 30,
+          "outputColumns": [
+            "content"
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1320,
+        340
+      ],
+      "id": "21fce448-d5ca-48a1-a271-e8be1e606ba4",
+      "name": "Get Speechs",
+      "alwaysOutputData": false,
+      "retryOnFail": true,
+      "credentials": {
+        "postgres": {
+          "id": "GFxCAqclSZKbbHwW",
+          "name": "Ringurooma Postgres Account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "numberInputs": 3,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.1,
+      "position": [
+        1060,
+        340
+      ],
+      "id": "8bc37469-baf2-4913-bc76-5be76b768708",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n\t\"level\": \"N3\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.2,
+      "position": [
+        800,
+        180
+      ],
+      "id": "0206a492-cfbf-4107-8d60-b60abeba318d",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n\t\"popularity\": \"medium\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.2,
+      "position": [
+        800,
+        580
+      ],
+      "id": "2011829a-7f97-447e-bacd-faaedb69855c",
+      "name": "Structured Output Parser 1"
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n\t\"topic_id\": 7\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.2,
+      "position": [
+        800,
+        960
+      ],
+      "id": "a2ec8368-d17f-4e37-9973-155ee7a3dcd8",
+      "name": "Structured Output Parser 2"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={\n  \"error\": \"Lỗi database: {{ $json.message }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1600,
+        340
+      ],
+      "id": "f44fa803-b1af-4755-9b6f-ccaa907c20b1",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.0-flash",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        540,
+        180
+      ],
+      "id": "dd54b74e-ca1d-48cd-86a5-95a8a2a424bc",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "vnJIKlTAXTRMZeaj",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.0-flash",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        540,
+        560
+      ],
+      "id": "b67aa83c-4556-45ba-a859-cc4975fa7ebc",
+      "name": "Google Gemini Chat Model1",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "vnJIKlTAXTRMZeaj",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.0-flash",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        560,
+        960
+      ],
+      "id": "61e818ed-ef79-434c-ac2f-fe30d705755b",
+      "name": "Google Gemini Chat Model2",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "vnJIKlTAXTRMZeaj",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Entry Point": {
+      "main": [
+        [
+          {
+            "node": "JLPT Level Classifier",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Popularity Classifier",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Topic Classifier",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "JLPT Level Classifier": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Popularity Classifier": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Topic Classifier": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Get Speechs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "JLPT Level Classifier",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser 1": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Popularity Classifier",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser 2": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Topic Classifier",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Speechs": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "JLPT Level Classifier",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Popularity Classifier",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Topic Classifier",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "2e80903d-f40d-4348-b185-4c5fff32d75a",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "18141f50263ea3752c73404a47c3133440685f99b7ea28332d8f84540f7d363f"
+  },
+  "id": "h8i6bHl21Iue95t6",
+  "tags": []
+}
