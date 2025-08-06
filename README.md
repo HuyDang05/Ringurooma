@@ -51,14 +51,31 @@ Demo Video
 
 Watch a full walkthrough of Ringurooma in action:
 
-> Replace `your_demo_video_id` with the actual YouTube video ID once available.
+### Casual Chatting
+
+[Link video](https://drive.google.com/file/d/1mIPuO9c1PlnSyEkXKy-MPQY1Y2b4dKpE/view?usp=sharing)
+
+### Topic Suggestion
+
+[Link video](https://drive.google.com/file/d/1qeDXNPuodotNm2ZjPDqQDFOFyhEeN2Ad/view?usp=sharing)
+
+### Speech Suggestion
+
+[Link video](https://drive.google.com/file/d/16XBVcvVdnXl3IW7T7kJfj8t1Hp92NtRi/view?usp=sharing)
+
+### Speech Prompt Suggestion
+
+[Link video](https://drive.google.com/file/d/1NdYG8PmQ_bUyE5BPgZ-Pg9TAb7oTU_md/view?usp=sharing)
+
+### Speaking Evaluation
+
+[Link video](https://drive.google.com/file/d/1ES3m0GnT8Jqip6inV6ratwlfiEcoaojW/view?usp=sharing)
 
 Testing
 ----------
 
 > Cypress is used for automated testing of UI flows including login, signup, chat interaction.
 
-Test Coverage:
 
 Architecture Decisions & System Decomposition
 ------------------------------------------------
