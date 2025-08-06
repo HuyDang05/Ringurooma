@@ -95,6 +95,22 @@ References
 
 -   Detailed Documentation (PDF)
 
+Future Development Plans
+---------------------------
 
+Here are some planned directions to expand Ringurooma's capabilities in the future:
 
+-   **Mobile App Version**: Build a native mobile version using React Native or Flutter to enhance accessibility.
+
+-   **Real-time Voice Chat with Native Tutors**: Integrate real-time speaking sessions with native Japanese speakers.
+
+-   **Multi-language Support**: Expand the platform to support other languages (e.g., Korean, English).
+
+-   **Advanced AI Scoring Models**: Train custom ML models to improve feedback precision beyond Azure.
+
+-   **Gamification Features**: Add streaks, XP points, badges, and challenges to boost user motivation.
+
+-   **A/B Testing Framework**: Integrate testing tools to continuously optimize UI/UX and feedback style.
+
+-   **Admin Dashboard**: Provide data visualization and learner performance tracking for institutions.
 
