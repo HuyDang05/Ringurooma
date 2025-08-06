@@ -29,6 +29,15 @@ Problems Solved
 
 -   Ringurooma bridges this gap by combining interaction with AI-based assessment and feedback.
 
+Architecture Decisions & System Decomposition
+------------------------------------------------
+
+-   Hybrid architecture enables separation of frontend/backend for scalable development
+
+-   Low-code platforms (Appsmith, n8n) enable fast iteration with minimal technical overhead
+
+-   Ringurooma Speech Service acts as a reusable, standalone API layer for speech assessment
+
 System Architecture
 ----------------------
 
@@ -74,17 +83,8 @@ Watch a full walkthrough of Ringurooma in action:
 Testing
 ----------
 
-> Cypress is used for automated testing of UI flows including login, signup, chat interaction.
-
-
-Architecture Decisions & System Decomposition
-------------------------------------------------
-
--   Hybrid architecture enables separation of frontend/backend for scalable development
-
--   Low-code platforms (Appsmith, n8n) enable fast iteration with minimal technical overhead
-
--   Ringurooma Speech Service acts as a reusable, standalone API layer for speech assessment
+> Cypress is used for automated testing of UI flows including login, signup, chat interaction a.
+> n8n automation test is used for backend logic testing, ensuring workflows execute correctly, calculations are accurate, and database interactions behave as expected.
 
 References
 -------------
