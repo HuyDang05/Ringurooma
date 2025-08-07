@@ -55,6 +55,10 @@ System Architecture
 
 -   **Languages**: HTML, CSS, JavaScript, Python
 
+## Database Design
+
+See the full [Database Design](./database-design.md) for detailed schema, tables, and relationships used in Ringurooma.
+
 Demo Video
 -------------
 
